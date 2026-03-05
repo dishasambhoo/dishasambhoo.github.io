@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Bollywood Piano 🎹</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Noto+Sans+Devanagari:wght@300;400;600&display=swap">
+<style>
+:root {
+  --gold: #d4a843;
+  --gold-light: #f0c96a;
+  --gold-dark: #a07828;
+  --crimson: #8b1a1a;
+  --deep: #0a0608;
+  --surface: #110d0f;
+  --surface2: #1c1418;
+  --text: #e8d8b0;
+  --text-dim: #9a8868;
+  --white-key: #f5f0e8;
+  --black-key: #1a1015;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--deep);
+  color: var(--text);
+  font-family: 'Crimson Pro', serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  cursor: default;
+}
+
+/* ── Background ornament ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(212,168,67,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 20% 110%, rgba(139,26,26,0.15) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 40% at 80% 110%, rgba(139,26,26,0.12) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.mandala-bg {
+  position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  width: 600px; height: 600px; opacity: 0.025; z-index: 0;
+  pointer-events: none;
+  animation: slowSpin 80s linear infinite;
+}
+
+@keyframes slowSpin { to { transform: translate(-50%,-50%) rotate(360deg); } }
+@keyframes fadeInUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+@keyframes keyPress { 0%,100%{transform:scaleY(1)} 50%{transform:scaleY(0.96)} }
+@keyframes noteFloat {
+  0%   { opacity:1; transform:translateY(0) scale(1); }
+  100% { opacity:0; transform:translateY(-80px) scale(0.5); }
+}
+@keyframes glow { 0%,100%{box-shadow:0 0 20px var(--gold-dark)} 50%{box-shadow:0 0 40px var(--gold),0 0 80px var(--gold-dark)} }
+@keyframes progressPulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
+@keyframes shimmer {
+  0%{background-position:-200% center}
+  100%{background-position:200% center}
+}
+@keyframes spin { to{transform:rotate(360deg)} }
+
+/* ── Layout ── */
+#app { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 0 16px 40px; }
+
+/* ── Header ── */
+header {
+  text-align: center; padding: 32px 16px 20px;
+  animation: fadeInUp 0.8s ease both;
+}
+.header-ornament { color: var(--gold); font-size: 22px; letter-spacing: 8px; opacity: 0.7; margin-bottom: 6px; }
+h1 {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(22px, 4vw, 38px);
+  color: var(--gold-light);
+  text-shadow: 0 0 30px rgba(212,168,67,0.4), 0 2px 4px rgba(0,0,0,0.8);
+  letter-spacing: 3px;
+  line-height: 1.2;
+}
+.subtitle {
+  font-style: italic; color: var(--text-dim); font-size: 14px;
+  margin-top: 6px; letter-spacing: 2px;
+}
+
+/* ── Song selector ── */
+#song-selector {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  justify-content: center; max-width: 860px; width: 100%;
+  margin: 16px 0 24px;
+  animation: fadeInUp 0.8s 0.2s ease both;
+}
+.song-btn {
+  background: var(--surface2);
+  border: 1px solid rgba(212,168,67,0.2);
+  border-radius: 40px;
+  color: var(--text-dim); font-family: 'Crimson Pro', serif;
+  font-size: 13px; padding: 7px 18px;
+  cursor: pointer; transition: all 0.25s;
+  white-space: nowrap;
+}
+.song-btn:hover { border-color: var(--gold); color: var(--gold-light); background: rgba(212,168,67,0.08); }
+.song-btn.active {
+  background: linear-gradient(135deg, rgba(212,168,67,0.25), rgba(160,120,40,0.15));
+  border-color: var(--gold);
+  color: var(--gold-light);
+  box-shadow: 0 0 20px rgba(212,168,67,0.2);
+}
+
+/* ── Now playing ── */
+#now-playing {
+  text-align: center; margin-bottom: 20px;
+  animation: fadeInUp 0.6s ease both;
+  min-height: 56px;
+}
+.np-title {
+  font-family: 'Cinzel Decorative', serif;
+  font-size: clamp(14px, 2.5vw, 20px);
+  color: var(--gold);
+  background: linear-gradient(90deg, var(--gold-dark), var(--gold-light), var(--gold-dark));
+  background-size: 200% auto;
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  animation: shimmer 3s linear infinite;
+}
+.np-info { color: var(--text-dim); font-size: 12px; margin-top: 4px; letter-spacing: 1px; }
+
+/* ── Controls ── */
+#controls {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 22px;
+  animation: fadeInUp 0.6s 0.1s ease both;
+  flex-wrap: wrap; justify-content: center;
+}
+.ctrl-btn {
+  background: var(--surface2);
+  border: 1px solid rgba(212,168,67,0.3);
+  border-radius: 50%; width: 48px; height: 48px;
+  color: var(--gold); font-size: 18px;
+  cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.ctrl-btn:hover { background: rgba(212,168,67,0.15); box-shadow: 0 0 15px rgba(212,168,67,0.3); transform: scale(1.05); }
+.ctrl-btn.playing { animation: glow 2s ease infinite; }
+#play-btn { width: 56px; height: 56px; font-size: 22px; }
+
+.tempo-wrap { display: flex; align-items: center; gap: 8px; color: var(--text-dim); font-size: 12px; }
+input[type=range] {
+  -webkit-appearance: none; width: 80px; height: 4px;
+  background: rgba(212,168,67,0.2); border-radius: 2px; outline: none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 14px; height: 14px;
+  background: var(--gold); border-radius: 50%; cursor: pointer;
+}
+
+/* ── Progress ── */
+#progress-wrap {
+  width: 100%; max-width: 860px; margin-bottom: 20px;
+  animation: fadeInUp 0.6s 0.15s ease both;
+}
+#progress-bar-bg {
+  height: 4px; background: rgba(255,255,255,0.06);
+  border-radius: 2px; cursor: pointer; position: relative;
+}
+#progress-bar-fill {
+  height: 100%; background: linear-gradient(90deg, var(--gold-dark), var(--gold-light));
+  border-radius: 2px; transition: width 0.1s linear;
+  box-shadow: 0 0 8px rgba(212,168,67,0.5);
+}
+#progress-label { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-dim); margin-top: 5px; }
+
+/* ── Scrolling notes display ── */
+#notes-display {
+  width: 100%; max-width: 860px; height: 80px;
+  background: rgba(0,0,0,0.3); border: 1px solid rgba(212,168,67,0.1);
+  border-radius: 12px; margin-bottom: 20px; overflow: hidden; position: relative;
+  animation: fadeInUp 0.6s 0.2s ease both;
+}
+#notes-track {
+  display: flex; align-items: center; gap: 6px;
+  position: absolute; top: 50%; transform: translateY(-50%);
+  left: 0; transition: left 0.1s linear;
+  padding: 0 430px;
+  white-space: nowrap;
+}
+.note-block {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 6px 10px; border-radius: 8px;
+  font-size: 12px; font-weight: 600;
+  flex-shrink: 0; transition: all 0.15s;
+  border: 1px solid transparent;
+  font-family: 'Crimson Pro', serif;
+}
+.note-block.white-note { background: rgba(245,240,232,0.1); color: var(--text-dim); }
+.note-block.black-note { background: rgba(26,16,21,0.6); color: var(--text-dim); border-color: rgba(255,255,255,0.1); }
+.note-block.active-note {
+  background: var(--gold) !important; color: var(--deep) !important;
+  border-color: var(--gold-light) !important;
+  box-shadow: 0 0 16px rgba(212,168,67,0.7) !important;
+  font-weight: 800; transform: scale(1.15);
+}
+.note-block.rest { background: transparent; color: rgba(255,255,255,0.1); font-style: italic; }
+
+/* ── Piano ── */
+#piano-section {
+  width: 100%; max-width: 860px;
+  animation: fadeInUp 0.6s 0.3s ease both;
+}
+#piano-frame {
+  background: linear-gradient(to bottom, #2a1e22, #160f13);
+  border: 2px solid rgba(212,168,67,0.3);
+  border-radius: 16px 16px 20px 20px;
+  padding: 18px 18px 28px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(212,168,67,0.1), inset 0 1px 0 rgba(212,168,67,0.2);
+  position: relative;
+  overflow: hidden;
+}
+#piano-frame::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 18px;
+  background: linear-gradient(to bottom, rgba(212,168,67,0.15), transparent);
+}
+
+/* Piano brand */
+.piano-brand {
+  text-align: center; margin-bottom: 14px;
+  font-family: 'Cinzel Decorative', serif;
+  font-size: 11px; color: rgba(212,168,67,0.5);
+  letter-spacing: 4px;
+}
+
+#keys-container {
+  position: relative;
+  display: flex;
+  user-select: none;
+  height: 160px;
+  overflow-x: auto;
+  overflow-y: visible;
+  scrollbar-width: none;
+  justify-content: center;
+  align-items: flex-start;
+}
+#keys-container::-webkit-scrollbar { display: none; }
+
+#keys-inner { position: relative; display: flex; }
+
+/* White keys */
+.wkey {
+  width: 42px; height: 150px;
+  background: linear-gradient(to bottom, var(--white-key) 0%, #e8e0d0 80%, #d4c8b0 100%);
+  border: 1px solid rgba(0,0,0,0.3);
+  border-radius: 0 0 8px 8px;
+  cursor: pointer; position: relative; z-index: 1;
+  transition: background 0.05s;
+  box-shadow: 2px 4px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.9);
+  display: flex; flex-direction: column; justify-content: flex-end; align-items: center;
+  padding-bottom: 10px;
+  flex-shrink: 0;
+}
+.wkey:hover { background: linear-gradient(to bottom, #fffff0, #f0ead8); }
+.wkey.pressed {
+  background: linear-gradient(to bottom, #f0c060 0%, #d4a030 100%) !important;
+  box-shadow: 1px 2px 4px rgba(0,0,0,0.5), inset 0 -2px 4px rgba(0,0,0,0.2) !important;
+  transform: scaleY(0.98); transform-origin: top;
+}
+.wkey.highlighted {
+  background: linear-gradient(to bottom, #ffe88a, #d4a830) !important;
+  box-shadow: 0 0 15px rgba(212,168,67,0.6), 1px 2px 4px rgba(0,0,0,0.4) !important;
+}
+.key-label {
+  font-size: 9px; color: rgba(100,80,60,0.6);
+  font-family: 'Crimson Pro', serif; font-weight: 600;
+  pointer-events: none;
+}
+
+/* Black keys */
+.bkey {
+  width: 28px; height: 95px;
+  background: linear-gradient(to bottom, #2a2028 0%, #120e10 60%, #1a1418 100%);
+  border-radius: 0 0 5px 5px;
+  cursor: pointer; position: absolute; z-index: 2;
+  top: 0;
+  box-shadow: 2px 5px 10px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.15);
+  transition: background 0.05s;
+  flex-shrink: 0;
+}
+.bkey:hover { background: linear-gradient(to bottom, #3a2e38, #1a1418); }
+.bkey.pressed {
+  background: linear-gradient(to bottom, #d4a030, #a07020) !important;
+  box-shadow: 1px 3px 5px rgba(0,0,0,0.8) !important;
+  transform: scaleY(0.97); transform-origin: top;
+}
+.bkey.highlighted {
+  background: linear-gradient(to bottom, #d4a830, #a07820) !important;
+  box-shadow: 0 0 12px rgba(212,168,67,0.6) !important;
+}
+
+/* Floating note */
+.floating-note {
+  position: fixed; pointer-events: none; z-index: 100;
+  font-size: 20px; animation: noteFloat 0.9s ease-out forwards;
+}
+
+/* ── Song list info ── */
+#song-info {
+  width: 100%; max-width: 860px; margin-top: 20px;
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  animation: fadeInUp 0.6s 0.4s ease both;
+}
+.info-card {
+  background: var(--surface2); border: 1px solid rgba(212,168,67,0.12);
+  border-radius: 12px; padding: 14px 16px;
+}
+.info-card h4 { color: var(--gold); font-size: 13px; font-family: 'Cinzel Decorative', serif; margin-bottom: 6px; letter-spacing: 1px; }
+.info-card p { color: var(--text-dim); font-size: 12px; line-height: 1.6; }
+.info-card .devanagari { font-family: 'Noto Sans Devanagari', sans-serif; font-size: 14px; color: var(--text); }
+
+/* Keyboard hint */
+#kb-hint {
+  width: 100%; max-width: 860px; margin-top: 14px;
+  text-align: center; color: var(--text-dim); font-size: 11px;
+  letter-spacing: 1px;
+  animation: fadeInUp 0.6s 0.5s ease both;
+}
+.kb-key {
+  display: inline-block; background: var(--surface2);
+  border: 1px solid rgba(212,168,67,0.2); border-radius: 4px;
+  padding: 1px 6px; font-size: 10px; color: var(--gold-light);
+  margin: 0 1px;
+}
+
+/* ── Loader ── */
+#loader {
+  position: fixed; inset: 0; background: var(--deep);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  z-index: 999; transition: opacity 0.6s;
+}
+#loader .spinner {
+  width: 48px; height: 48px; border: 3px solid rgba(212,168,67,0.2);
+  border-top-color: var(--gold); border-radius: 50%;
+  animation: spin 0.8s linear infinite; margin-bottom: 16px;
+}
+#loader p { color: var(--text-dim); font-style: italic; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="spinner"></div>
+  <p>Tuning the piano…</p>
+</div>
+
+<!-- Mandala background -->
+<svg class="mandala-bg" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g stroke="#d4a843" stroke-width="0.4">
+    <circle cx="100" cy="100" r="95"/><circle cx="100" cy="100" r="80"/><circle cx="100" cy="100" r="65"/>
+    <circle cx="100" cy="100" r="50"/><circle cx="100" cy="100" r="35"/><circle cx="100" cy="100" r="20"/>
+    <line x1="5" y1="100" x2="195" y2="100"/><line x1="100" y1="5" x2="100" y2="195"/>
+    <line x1="33" y1="33" x2="167" y2="167"/><line x1="167" y1="33" x2="33" y2="167"/>
+    <line x1="15" y1="62" x2="185" y2="138"/><line x1="15" y1="138" x2="185" y2="62"/>
+    <line x1="62" y1="15" x2="138" y2="185"/><line x1="138" y1="15" x2="62" y2="185"/>
+    <polygon points="100,10 190,55 190,145 100,190 10,145 10,55"/>
+    <polygon points="100,30 170,65 170,135 100,170 30,135 30,65"/>
+  </g>
+</svg>
+
+<div id="app">
+  <header>
+    <div class="header-ornament">✦ ♪ ✦ ♪ ✦</div>
+    <h1>Bollywood Piano</h1>
+    <div class="subtitle">बॉलीवुड पियानो · Classic Hindi Film Melodies</div>
+  </header>
+
+  <!-- Song Selector -->
+  <div id="song-selector"></div>
+
+  <!-- Now Playing -->
+  <div id="now-playing">
+    <div class="np-title" id="np-title">Select a song to begin…</div>
+    <div class="np-info" id="np-info">Choose from the melodies above</div>
+  </div>
+
+  <!-- Controls -->
+  <div id="controls">
+    <button class="ctrl-btn" id="prev-btn" title="Previous song">⏮</button>
+    <button class="ctrl-btn" id="play-btn" title="Play/Pause">▶</button>
+    <button class="ctrl-btn" id="next-btn" title="Next song">⏭</button>
+    <button class="ctrl-btn" id="stop-btn" title="Stop">⏹</button>
+    <div class="tempo-wrap">
+      <span>🐢</span>
+      <input type="range" id="tempo-slider" min="40" max="160" value="90">
+      <span>🐇</span>
+      <span id="tempo-label">90 BPM</span>
+    </div>
+    <div class="tempo-wrap">
+      <span>🔉</span>
+      <input type="range" id="vol-slider" min="0" max="100" value="70">
+      <span>🔊</span>
+    </div>
+  </div>
+
+  <!-- Progress -->
+  <div id="progress-wrap">
+    <div id="progress-bar-bg" id="prog-bg">
+      <div id="progress-bar-fill" style="width:0%"></div>
+    </div>
+    <div id="progress-label">
+      <span id="prog-cur">0:00</span>
+      <span id="prog-total">0:00</span>
+    </div>
+  </div>
+
+  <!-- Notes Display -->
+  <div id="notes-display">
+    <div id="notes-track"></div>
+  </div>
+
+  <!-- Piano -->
+  <div id="piano-section">
+    <div id="piano-frame">
+      <div class="piano-brand">✦ RAGA GRAND ✦</div>
+      <div id="keys-container">
+        <div id="keys-inner"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Info cards -->
+  <div id="song-info"></div>
+
+  <!-- Keyboard hint -->
+  <div id="kb-hint">
+    <span class="kb-key">A</span><span class="kb-key">S</span><span class="kb-key">D</span>
+    <span class="kb-key">F</span><span class="kb-key">G</span><span class="kb-key">H</span>
+    <span class="kb-key">J</span><span class="kb-key">K</span><span class="kb-key">L</span> — Play manually &nbsp;|&nbsp;
+    <span class="kb-key">Space</span> — Play/Pause &nbsp;|&nbsp;
+    <span class="kb-key">←</span><span class="kb-key">→</span> — Prev/Next Song
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  AUDIO ENGINE
+// ═══════════════════════════════════════════════════════════
+let audioCtx = null;
+let masterGain = null;
+let reverbNode = null;
+let activeNotes = {};
+
+function getAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = 0.7;
+    // Simple reverb using convolver
+    reverbNode = audioCtx.createConvolver();
+    const revLen = audioCtx.sampleRate * 1.8;
+    const revBuf = audioCtx.createBuffer(2, revLen, audioCtx.sampleRate);
+    for (let c = 0; c < 2; c++) {
+      const data = revBuf.getChannelData(c);
+      for (let i = 0; i < revLen; i++) data[i] = (Math.random()*2-1) * Math.pow(1 - i/revLen, 2.5);
+    }
+    reverbNode.buffer = revBuf;
+    const reverbGain = audioCtx.createGain(); reverbGain.gain.value = 0.22;
+    masterGain.connect(audioCtx.destination);
+    masterGain.connect(reverbGain);
+    reverbGain.connect(reverbNode);
+    reverbNode.connect(audioCtx.destination);
+  }
+  return audioCtx;
+}
+
+// Note frequencies (C4 = 261.63 Hz)
+const NOTE_FREQ = {};
+const noteNames = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+for (let oct = 2; oct <= 7; oct++) {
+  noteNames.forEach((n, i) => {
+    const midi = (oct + 1) * 12 + i;
+    NOTE_FREQ[n + oct] = 440 * Math.pow(2, (midi - 69) / 12);
+  });
+}
+
+function playNote(noteName, duration = 0.6, velocity = 0.8) {
+  const ctx = getAudio();
+  const freq = NOTE_FREQ[noteName];
+  if (!freq) return;
+
+  const now = ctx.currentTime;
+  const osc1 = ctx.createOscillator();
+  const osc2 = ctx.createOscillator();
+  const osc3 = ctx.createOscillator();
+  const gainNode = ctx.createGain();
+  const filter = ctx.createBiquadFilter();
+
+  osc1.type = 'triangle'; osc1.frequency.value = freq;
+  osc2.type = 'sine';     osc2.frequency.value = freq * 2.001;
+  osc3.type = 'sine';     osc3.frequency.value = freq * 3.003;
+
+  filter.type = 'lowpass'; filter.frequency.value = 3200; filter.Q.value = 0.8;
+
+  const g1 = ctx.createGain(); g1.gain.value = velocity * 0.55;
+  const g2 = ctx.createGain(); g2.gain.value = velocity * 0.25;
+  const g3 = ctx.createGain(); g3.gain.value = velocity * 0.08;
+
+  osc1.connect(g1); osc2.connect(g2); osc3.connect(g3);
+  g1.connect(filter); g2.connect(filter); g3.connect(filter);
+  filter.connect(gainNode);
+  gainNode.connect(masterGain);
+
+  // Piano-like ADSR
+  gainNode.gain.setValueAtTime(0, now);
+  gainNode.gain.linearRampToValueAtTime(velocity * 0.9, now + 0.008);
+  gainNode.gain.exponentialRampToValueAtTime(velocity * 0.6, now + 0.05);
+  gainNode.gain.exponentialRampToValueAtTime(velocity * 0.35, now + 0.15);
+  gainNode.gain.exponentialRampToValueAtTime(0.0001, now + duration + 0.3);
+
+  osc1.start(now); osc2.start(now); osc3.start(now);
+  osc1.stop(now + duration + 0.5);
+  osc2.stop(now + duration + 0.5);
+  osc3.stop(now + duration + 0.5);
+  return gainNode;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SONGS DATA
+// ═══════════════════════════════════════════════════════════
+// Format: [note, duration_beats, velocity(optional)]
+// duration: 1=quarter, 0.5=eighth, 2=half, 0.25=16th, etc.
+// null note = rest
+
+const SONGS = [
+  {
+    id: 'lag-ja-gale',
+    title: 'Lag Ja Gale',
+    hindi: 'लग जा गले',
+    film: 'Woh Kaun Thi (1964)',
+    singer: 'Lata Mangeshkar',
+    composer: 'Madan Mohan',
+    tempo: 72,
+    notes: [
+      // Main melody of Lag Ja Gale
+      ['E4',1],['G4',1],['A4',2],
+      ['G4',0.5],['A4',0.5],['B4',1],['A4',2],
+      ['E4',1],['G4',1],['A4',1.5],['G4',0.5],
+      ['F4',1],['E4',2],[null,1],
+      ['D4',1],['E4',1],['F4',1],['E4',1],
+      ['D4',1],['C4',2],[null,1],
+      ['E4',1],['G4',1],['A4',2],
+      ['G4',0.5],['A4',0.5],['B4',1],['A4',2],
+      ['G4',1],['F4',0.5],['E4',0.5],['D4',1],['E4',1],
+      ['C4',4],[null,1],
+      // Bridge
+      ['A4',1],['B4',1],['C5',2],
+      ['B4',0.5],['C5',0.5],['D5',1],['C5',2],
+      ['A4',1],['G4',1],['F4',1],['E4',1],
+      ['D4',2],['E4',2],[null,1],
+      // Repeat main
+      ['E4',1],['G4',1],['A4',2],
+      ['G4',0.5],['A4',0.5],['B4',1],['A4',2],
+      ['G4',1],['F4',0.5],['E4',0.5],['D4',1],['E4',1],
+      ['C4',4],
+    ]
+  },
+  {
+    id: 'tere-bina',
+    title: 'Tere Bina Zindagi Se',
+    hindi: 'तेरे बिना ज़िंदगी से',
+    film: 'Aandhi (1975)',
+    singer: 'Kishore Kumar & Lata',
+    composer: 'R.D. Burman',
+    tempo: 78,
+    notes: [
+      // Tere Bina Zindagi se koi shikwa nahi
+      ['G4',1],['A4',1],['B4',0.5],['C5',0.5],['B4',1],
+      ['A4',1],['G4',2],[null,1],
+      ['G4',0.5],['A4',0.5],['G4',0.5],['E4',0.5],['D4',1],['E4',1],
+      ['G4',4],[null,1],
+      ['E4',1],['F4',1],['G4',1],['F4',1],
+      ['E4',1],['D4',2],[null,1],
+      ['D4',0.5],['E4',0.5],['F4',0.5],['E4',0.5],['D4',1],['C4',1],
+      ['D4',4],[null,1],
+      // Tere bina kya hai...
+      ['G4',1],['A4',1],['B4',1],['C5',1],
+      ['D5',2],['C5',1],['B4',1],
+      ['A4',1],['G4',1],['F4',0.5],['E4',0.5],['D4',1],
+      ['E4',4],[null,1],
+      ['G4',1],['A4',1],['B4',0.5],['C5',0.5],['B4',1],
+      ['A4',1],['G4',2],[null,1],
+      ['G4',0.5],['A4',0.5],['G4',0.5],['E4',0.5],['D4',1],['E4',1],
+      ['G4',4],
+    ]
+  },
+  {
+    id: 'teri-meri',
+    title: 'Teri Meri Prem Kahani',
+    hindi: 'तेरी मेरी प्रेम कहानी',
+    film: 'Bodyguard (2011)',
+    singer: 'Rahat Fateh Ali Khan',
+    composer: 'Sajid-Wajid',
+    tempo: 88,
+    notes: [
+      // Main hook
+      ['C5',0.5],['B4',0.5],['A4',1],['G4',1],['A4',1],
+      ['B4',0.5],['C5',0.5],['D5',2],[null,1],
+      ['D5',0.5],['C5',0.5],['B4',1],['A4',1],['G4',1],
+      ['E4',2],['F4',2],[null,1],
+      ['G4',0.5],['A4',0.5],['B4',0.5],['C5',0.5],['D5',1],['C5',1],
+      ['B4',1],['A4',2],[null,1],
+      ['A4',0.5],['G4',0.5],['F4',0.5],['E4',0.5],['D4',1],['E4',1],
+      ['G4',4],[null,1],
+      // Chorus
+      ['E5',1],['D5',1],['C5',0.5],['D5',0.5],['E5',1],
+      ['G5',2],['F5',2],[null,1],
+      ['E5',1],['D5',1],['C5',1],['B4',1],
+      ['A4',2],['G4',2],[null,1],
+      ['G4',0.5],['A4',0.5],['B4',1],['C5',1],['D5',1],
+      ['C5',1],['B4',2],[null,1],
+      ['A4',0.5],['B4',0.5],['C5',0.5],['B4',0.5],['A4',1],['G4',1],
+      ['E4',4],
+    ]
+  },
+  {
+    id: 'kabhi-khushi',
+    title: 'Kabhi Khushi Kabhie Gham',
+    hindi: 'कभी खुशी कभी ग़म',
+    film: 'K3G (2001)',
+    singer: 'Lata Mangeshkar',
+    composer: 'Jatin-Lalit',
+    tempo: 68,
+    notes: [
+      // Opening
+      ['G4',2],['A4',1],['B4',1],
+      ['C5',2],['B4',1],['A4',1],
+      ['G4',1],['A4',1],['B4',2],
+      ['A4',4],[null,1],
+      // Main melody
+      ['C5',1],['D5',1],['E5',1.5],['D5',0.5],
+      ['C5',1],['B4',1],['A4',2],
+      ['G4',0.5],['A4',0.5],['B4',1],['C5',1],['D5',1],
+      ['E5',4],[null,1],
+      ['E5',1],['D5',1],['C5',1],['B4',1],
+      ['A4',1],['G4',2],[null,1],
+      ['G4',0.5],['A4',0.5],['B4',1],['A4',1],['G4',1],
+      ['F4',2],['E4',2],[null,1],
+      // Bridge - higher
+      ['A4',1],['B4',1],['C5',1],['D5',1],
+      ['E5',1],['F5',1],['E5',2],
+      ['D5',1],['C5',1],['B4',1],['A4',1],
+      ['G4',4],[null,1],
+      ['G4',1],['A4',1],['B4',1],['C5',1],
+      ['D5',2],['C5',1],['B4',1],
+      ['A4',1],['G4',1],['F4',0.5],['E4',0.5],['D4',1],
+      ['C4',4],
+    ]
+  },
+  {
+    id: 'dil-dhadakne',
+    title: 'Dil Dhadakne Do',
+    hindi: 'दिल धड़कने दो',
+    film: 'Dil Dhadakne Do (2015)',
+    singer: 'Farhan Akhtar',
+    composer: 'Shankar-Ehsaan-Loy',
+    tempo: 100,
+    notes: [
+      // Energetic main melody
+      ['E4',0.5],['G4',0.5],['A4',0.5],['B4',0.5],['A4',0.5],['G4',0.5],['E4',0.5],['D4',0.5],
+      ['E4',2],['G4',1],['A4',1],
+      ['B4',0.5],['A4',0.5],['G4',0.5],['F4',0.5],['E4',1],['D4',1],
+      ['C4',4],[null,1],
+      ['G4',0.5],['A4',0.5],['B4',0.5],['C5',0.5],['B4',0.5],['A4',0.5],['G4',0.5],['E4',0.5],
+      ['G4',2],['A4',1],['B4',1],
+      ['C5',0.5],['B4',0.5],['A4',0.5],['G4',0.5],['F4',1],['E4',1],
+      ['D4',4],[null,1],
+      // Chorus - higher energy
+      ['E5',0.5],['D5',0.5],['C5',0.5],['D5',0.5],['E5',1],['G5',1],
+      ['A5',2],['G5',1],['E5',1],
+      ['D5',0.5],['C5',0.5],['B4',0.5],['C5',0.5],['D5',1],['E5',1],
+      ['G5',4],[null,1],
+      ['E5',1],['D5',1],['C5',0.5],['B4',0.5],['A4',1],
+      ['G4',1],['A4',1],['B4',2],
+      ['C5',0.5],['B4',0.5],['A4',0.5],['G4',0.5],['F4',1],['E4',1],
+      ['G4',4],
+    ]
+  },
+  {
+    id: 'tu-hi-re',
+    title: 'Tu Hi Re',
+    hindi: 'तू ही रे',
+    film: 'Bombay (1995)',
+    singer: 'Hariharan',
+    composer: 'A.R. Rahman',
+    tempo: 76,
+    notes: [
+      // Tu hi re main melody - hauntingly beautiful
+      ['A4',1],['G4',1],['E4',1.5],['D4',0.5],
+      ['E4',1],['G4',1],['A4',2],
+      ['B4',1],['A4',1],['G4',1],['E4',1],
+      ['D4',4],[null,1],
+      ['G4',1],['A4',1],['B4',1.5],['A4',0.5],
+      ['G4',1],['E4',1],['D4',2],
+      ['E4',0.5],['G4',0.5],['A4',1],['G4',1],['E4',1],
+      ['D4',4],[null,1],
+      // Higher phrase
+      ['C5',1],['B4',1],['A4',1],['G4',1],
+      ['A4',2],['G4',1],['E4',1],
+      ['D4',0.5],['E4',0.5],['G4',1],['A4',1],['B4',1],
+      ['A4',4],[null,1],
+      ['B4',1],['C5',1],['D5',1.5],['C5',0.5],
+      ['B4',1],['A4',1],['G4',2],
+      ['A4',0.5],['G4',0.5],['E4',0.5],['D4',0.5],['E4',1],['G4',1],
+      ['A4',4],
+    ]
+  },
+  {
+    id: 'tum-hi-ho',
+    title: 'Tum Hi Ho',
+    hindi: 'तुम ही हो',
+    film: 'Aashiqui 2 (2013)',
+    singer: 'Arijit Singh',
+    composer: 'Mithoon',
+    tempo: 72,
+    notes: [
+      // Famous Tum Hi Ho melody
+      ['B4',1],['A4',1],['G4',1],['A4',1],
+      ['B4',2],['G4',2],
+      ['A4',1],['B4',1],['C5',1],['B4',1],
+      ['A4',4],[null,1],
+      ['G4',1],['A4',1],['B4',1],['C5',1],
+      ['D5',2],['C5',2],
+      ['B4',1],['C5',1],['D5',1],['C5',1],
+      ['B4',4],[null,1],
+      // Chorus — main hook
+      ['E5',1.5],['D5',0.5],['C5',1],['B4',1],
+      ['A4',2],['G4',2],
+      ['A4',1],['B4',1],['C5',0.5],['D5',0.5],['C5',1],
+      ['B4',4],[null,1],
+      ['G5',1],['F5',1],['E5',1],['D5',1],
+      ['C5',2],['B4',2],
+      ['A4',0.5],['B4',0.5],['C5',1],['B4',1],['A4',1],
+      ['G4',4],
+    ]
+  },
+  {
+    id: 'chaiyya-chaiyya',
+    title: 'Chaiyya Chaiyya',
+    hindi: 'छैयाँ छैयाँ',
+    film: 'Dil Se (1998)',
+    singer: 'Sukhwinder Singh',
+    composer: 'A.R. Rahman',
+    tempo: 108,
+    notes: [
+      // Chaiyya Chaiyya - upbeat folk-inspired
+      ['D4',0.5],['E4',0.5],['G4',0.5],['A4',0.5],['G4',0.5],['E4',0.5],['D4',0.5],['E4',0.5],
+      ['G4',2],['A4',1],['G4',1],
+      ['E4',0.5],['G4',0.5],['A4',0.5],['B4',0.5],['A4',0.5],['G4',0.5],['E4',0.5],['D4',0.5],
+      ['G4',4],[null,1],
+      ['A4',0.5],['B4',0.5],['C5',0.5],['D5',0.5],['C5',0.5],['B4',0.5],['A4',0.5],['G4',0.5],
+      ['A4',2],['B4',1],['A4',1],
+      ['G4',0.5],['A4',0.5],['B4',0.5],['C5',0.5],['B4',0.5],['A4',0.5],['G4',0.5],['E4',0.5],
+      ['D4',4],[null,1],
+      // Higher section
+      ['D5',0.5],['E5',0.5],['G5',1],['E5',1],['D5',1],
+      ['C5',2],['B4',2],
+      ['A4',0.5],['B4',0.5],['C5',0.5],['D5',0.5],['C5',0.5],['B4',0.5],['A4',0.5],['G4',0.5],
+      ['A4',4],[null,1],
+      ['G4',0.5],['A4',0.5],['B4',0.5],['C5',0.5],['D5',1],['C5',1],
+      ['B4',1],['A4',1],['G4',2],
+      ['E4',0.5],['G4',0.5],['A4',0.5],['G4',0.5],['E4',1],['D4',1],
+      ['G4',4],
+    ]
+  },
+];
+
+// ═══════════════════════════════════════════════════════════
+//  PIANO KEYBOARD SETUP
+// ═══════════════════════════════════════════════════════════
+// Keys from C3 to C6
+const KEY_MAP = [];
+const octaves = [3, 4, 5, 6];
+const whites = ['C','D','E','F','G','A','B'];
+const blacks = { 'C':'C#', 'D':'D#', 'F':'F#', 'G':'G#', 'A':'A#' };
+// keyboard mapping
+const KB_KEYS = 'asdfghjkl';
+const KB_WHITE_NOTES = ['C4','D4','E4','F4','G4','A4','B4','C5','D5'];
+
+let whiteIndex = 0;
+const keysInner = document.getElementById('keys-inner');
+keysInner.style.position = 'relative';
+
+const allWhiteKeys = [];
+const allBlackKeys = [];
+
+octaves.forEach(oct => {
+  whites.forEach(w => {
+    const noteName = w + oct;
+    const el = document.createElement('div');
+    el.className = 'wkey';
+    el.dataset.note = noteName;
+    el.innerHTML = `<span class="key-label">${noteName}</span>`;
+    el.addEventListener('mousedown', () => triggerKey(noteName, el));
+    el.addEventListener('touchstart', e => { e.preventDefault(); triggerKey(noteName, el); });
+    keysInner.appendChild(el);
+    allWhiteKeys.push({ note: noteName, el, index: allWhiteKeys.length });
+
+    if (blacks[w]) {
+      const bName = blacks[w] + oct;
+      const bEl = document.createElement('div');
+      bEl.className = 'bkey';
+      bEl.dataset.note = bName;
+      bEl.addEventListener('mousedown', () => triggerKey(bName, bEl));
+      bEl.addEventListener('touchstart', e => { e.preventDefault(); triggerKey(bName, bEl); });
+      keysInner.appendChild(bEl);
+      allBlackKeys.push({ note: bName, el: bEl, whiteIndex: allWhiteKeys.length - 1 });
+    }
+  });
+});
+
+// Position black keys
+function positionBlackKeys() {
+  const ww = 42; // white key width
+  allBlackKeys.forEach(bk => {
+    bk.el.style.left = (bk.whiteIndex * ww - 9) + 'px';
+  });
+}
+positionBlackKeys();
+keysInner.style.width = (allWhiteKeys.length * 42) + 'px';
+
+function triggerKey(noteName, el) {
+  getAudio();
+  playNote(noteName, 0.8, 0.85);
+  el.classList.add('pressed');
+  setTimeout(() => el.classList.remove('pressed'), 200);
+  spawnNoteFloat(noteName, el);
+}
+
+function spawnNoteFloat(noteName, el) {
+  const rect = el.getBoundingClientRect();
+  const div = document.createElement('div');
+  div.className = 'floating-note';
+  div.textContent = ['♪','♫','♩','♬'][Math.floor(Math.random()*4)];
+  div.style.left = (rect.left + rect.width/2 - 10) + 'px';
+  div.style.top  = (rect.top - 10) + 'px';
+  div.style.color = '#d4a843';
+  document.body.appendChild(div);
+  setTimeout(() => div.remove(), 1000);
+}
+
+// Keyboard input
+document.addEventListener('keydown', e => {
+  if (e.repeat) return;
+  if (e.code === 'Space') { e.preventDefault(); togglePlay(); return; }
+  if (e.code === 'ArrowLeft') { prevSong(); return; }
+  if (e.code === 'ArrowRight') { nextSong(); return; }
+  const idx = KB_KEYS.indexOf(e.key.toLowerCase());
+  if (idx >= 0 && idx < KB_WHITE_NOTES.length) {
+    const note = KB_WHITE_NOTES[idx];
+    const found = allWhiteKeys.find(k => k.note === note);
+    if (found) triggerKey(note, found.el);
+  }
+});
+
+function highlightKey(noteName) {
+  allWhiteKeys.forEach(k => k.el.classList.remove('highlighted'));
+  allBlackKeys.forEach(k => k.el.classList.remove('highlighted'));
+  if (!noteName) return;
+  const wk = allWhiteKeys.find(k => k.note === noteName);
+  if (wk) { wk.el.classList.add('highlighted'); return; }
+  const bk = allBlackKeys.find(k => k.note === noteName);
+  if (bk) bk.el.classList.add('highlighted');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SONG PLAYBACK ENGINE
+// ═══════════════════════════════════════════════════════════
+let currentSongIdx = 0;
+let isPlaying = false;
+let playTimeout = null;
+let currentNoteIdx = 0;
+let bpm = 90;
+let volume = 0.7;
+
+const playBtn = document.getElementById('play-btn');
+const tempoSlider = document.getElementById('tempo-slider');
+const tempoLabel = document.getElementById('tempo-label');
+const volSlider = document.getElementById('vol-slider');
+const progFill = document.getElementById('progress-bar-fill');
+const progCur = document.getElementById('prog-cur');
+const progTotal = document.getElementById('prog-total');
+
+tempoSlider.addEventListener('input', () => {
+  bpm = parseInt(tempoSlider.value);
+  tempoLabel.textContent = bpm + ' BPM';
+});
+volSlider.addEventListener('input', () => {
+  volume = parseInt(volSlider.value) / 100;
+  if (masterGain) masterGain.gain.value = volume;
+});
+
+function getSong() { return SONGS[currentSongIdx]; }
+function beatToSec(beats) { return beats * (60 / bpm); }
+
+function totalBeats(song) {
+  return song.notes.reduce((s, n) => s + n[1], 0);
+}
+
+function formatTime(sec) {
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return m + ':' + String(s).padStart(2,'0');
+}
+
+function loadSong(idx) {
+  stopPlayback();
+  currentSongIdx = idx;
+  currentNoteIdx = 0;
+  const song = getSong();
+  bpm = song.tempo;
+  tempoSlider.value = bpm;
+  tempoLabel.textContent = bpm + ' BPM';
+
+  document.getElementById('np-title').textContent = song.title + ' · ' + song.hindi;
+  document.getElementById('np-info').textContent = song.film + ' · ' + song.singer + ' · Composer: ' + song.composer;
+
+  document.querySelectorAll('.song-btn').forEach((b,i) => b.classList.toggle('active', i===idx));
+  buildNotesTrack(song);
+  updateProgress(0, totalBeats(song));
+  updateInfoCards(song);
+}
+
+function buildNotesTrack(song) {
+  const track = document.getElementById('notes-track');
+  track.innerHTML = '';
+  song.notes.forEach((n, i) => {
+    const el = document.createElement('div');
+    el.className = 'note-block';
+    if (!n[0]) {
+      el.classList.add('rest');
+      el.textContent = '—';
+    } else {
+      el.classList.add(n[0].includes('#') ? 'black-note' : 'white-note');
+      el.textContent = n[0];
+    }
+    el.id = `nb-${i}`;
+    track.appendChild(el);
+  });
+}
+
+function scrollNotesTo(idx) {
+  const track = document.getElementById('notes-track');
+  const el = document.getElementById(`nb-${idx}`);
+  document.querySelectorAll('.note-block').forEach(e => e.classList.remove('active-note'));
+  if (el) {
+    el.classList.add('active-note');
+    // Scroll track so active note is centered
+    const display = document.getElementById('notes-display');
+    const displayW = display.offsetWidth;
+    const elLeft = el.offsetLeft;
+    const elW = el.offsetWidth;
+    const desired = elLeft - displayW/2 + elW/2 + 430; // +430 for the padding
+    track.style.left = (-desired + displayW/2) + 'px';
+  }
+}
+
+let elapsedBeats = 0;
+
+function scheduleNote() {
+  if (!isPlaying) return;
+  const song = getSong();
+  if (currentNoteIdx >= song.notes.length) {
+    // Loop
+    currentNoteIdx = 0;
+    elapsedBeats = 0;
+  }
+
+  const [note, dur, vel] = song.notes[currentNoteIdx];
+  const secDur = beatToSec(dur);
+
+  if (note) {
+    getAudio();
+    if (masterGain) masterGain.gain.value = volume;
+    playNote(note, secDur * 0.85, vel || 0.78);
+    highlightKey(note);
+    // Floating note on piano
+    const wk = allWhiteKeys.find(k => k.note === note);
+    const bk = allBlackKeys.find(k => k.note === note);
+    if (wk || bk) {
+      const el = wk ? wk.el : bk.el;
+      el.classList.add('pressed');
+      setTimeout(() => el.classList.remove('pressed'), Math.min(secDur*900, 250));
+      spawnNoteFloat(note, el);
+    }
+  } else {
+    highlightKey(null);
+  }
+
+  scrollNotesTo(currentNoteIdx);
+  elapsedBeats += dur;
+  updateProgress(elapsedBeats, totalBeats(song));
+
+  currentNoteIdx++;
+  playTimeout = setTimeout(scheduleNote, secDur * 1000);
+}
+
+function updateProgress(elapsed, total) {
+  const pct = Math.min(100, (elapsed / total) * 100);
+  progFill.style.width = pct + '%';
+  const secEl = beatToSec(elapsed);
+  const secTot = beatToSec(total);
+  progCur.textContent = formatTime(secEl);
+  progTotal.textContent = formatTime(secTot);
+}
+
+function togglePlay() {
+  getAudio();
+  if (isPlaying) pausePlayback();
+  else startPlayback();
+}
+
+function startPlayback() {
+  isPlaying = true;
+  playBtn.textContent = '⏸';
+  playBtn.classList.add('playing');
+  scheduleNote();
+}
+
+function pausePlayback() {
+  isPlaying = false;
+  playBtn.textContent = '▶';
+  playBtn.classList.remove('playing');
+  clearTimeout(playTimeout);
+  highlightKey(null);
+}
+
+function stopPlayback() {
+  pausePlayback();
+  currentNoteIdx = 0;
+  elapsedBeats = 0;
+  updateProgress(0, totalBeats(getSong()));
+  document.querySelectorAll('.note-block').forEach(e => e.classList.remove('active-note'));
+  highlightKey(null);
+}
+
+function prevSong() {
+  loadSong((currentSongIdx - 1 + SONGS.length) % SONGS.length);
+}
+function nextSong() {
+  loadSong((currentSongIdx + 1) % SONGS.length);
+}
+
+document.getElementById('play-btn').addEventListener('click', togglePlay);
+document.getElementById('stop-btn').addEventListener('click', stopPlayback);
+document.getElementById('prev-btn').addEventListener('click', prevSong);
+document.getElementById('next-btn').addEventListener('click', nextSong);
+
+// Progress bar click
+document.getElementById('progress-bar-bg').addEventListener('click', e => {
+  const rect = e.currentTarget.getBoundingClientRect();
+  const pct = (e.clientX - rect.left) / rect.width;
+  const song = getSong();
+  const total = totalBeats(song);
+  const targetBeat = pct * total;
+  // Find closest note index
+  let acc = 0;
+  for (let i = 0; i < song.notes.length; i++) {
+    if (acc >= targetBeat) { currentNoteIdx = i; elapsedBeats = acc; break; }
+    acc += song.notes[i][1];
+  }
+  if (isPlaying) { clearTimeout(playTimeout); scheduleNote(); }
+  updateProgress(elapsedBeats, total);
+});
+
+// ═══════════════════════════════════════════════════════════
+//  INFO CARDS
+// ═══════════════════════════════════════════════════════════
+function updateInfoCards(song) {
+  document.getElementById('song-info').innerHTML = `
+    <div class="info-card">
+      <h4>Song</h4>
+      <p class="devanagari">${song.hindi}</p>
+      <p>${song.title}</p>
+    </div>
+    <div class="info-card">
+      <h4>Film & Year</h4>
+      <p>${song.film}</p>
+    </div>
+    <div class="info-card">
+      <h4>Singer</h4>
+      <p>${song.singer}</p>
+    </div>
+    <div class="info-card">
+      <h4>Music Director</h4>
+      <p>${song.composer}</p>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  BUILD SONG SELECTOR
+// ═══════════════════════════════════════════════════════════
+const selector = document.getElementById('song-selector');
+SONGS.forEach((song, i) => {
+  const btn = document.createElement('button');
+  btn.className = 'song-btn';
+  btn.textContent = song.title;
+  btn.addEventListener('click', () => { loadSong(i); startPlayback(); });
+  selector.appendChild(btn);
+});
+
+// ═══════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════
+window.addEventListener('load', () => {
+  loadSong(0);
+  // Hide loader
+  const loader = document.getElementById('loader');
+  setTimeout(() => {
+    loader.style.opacity = '0';
+    setTimeout(() => loader.style.display = 'none', 600);
+  }, 800);
+
+  // Scroll piano to C4 area
+  const keys = document.getElementById('keys-container');
+  // C4 is at index 7 white keys from start (C3=0, D3=1...B3=6, C4=7)
+  setTimeout(() => { keys.scrollLeft = 7 * 42 - 20; }, 900);
+});
+</script>
+</body>
+</html>
